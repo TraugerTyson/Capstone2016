@@ -4,8 +4,21 @@ import copy
 import random
 import Create_Net
 import math
-
-def PlayWithHuman():
+import numpy as np
+import pickle
+def importNet(size):
+    fileWeights = open("bestw","r")
+    fileBiases = open("bestb","r")
+    net = NET.Network(size)
+    w = pickle.load(fileWeights)
+    b = pickle.load(fileBiases)
+    net.biases = b
+    net.weights = w
+    fileWeights.close()
+    fileBiases.close()
+    return net
+    
+def playWithHuman(net):
     """This function allows a human player to play
     against a neural network"""
     board = Tic_Tac_Toe.Board()
@@ -23,7 +36,7 @@ def PlayWithHuman():
                 print "This place has been taken! Please do again!"
                 turn -=1
         else:
-            piece = Create_Net.getBest().getAnswer(board.boardState)
+            piece = net.getAnswer(board.boardState)
             if not oh.placePiece(board, piece):
                 print "This place has been taken! Please do again!"
                 turn -=1
@@ -42,10 +55,10 @@ def playWithRandom(net):
     piece = 0
     while ord(board.won[0]) == 32:
         if turn%2 == 0:
-            piece = -1
-            while (board.boardState[piece]== "x" and board.boardState[piece] == "o") or piece ==-1:
-                piece = int(random.random()*9)
-            ex.placePiece(board,piece)
+            piece = int(random.random()*9)
+            if not ex.placePiece(board,piece):
+                turn-=1
+            
         else:
             piece = net.getAnswer(board.boardState)
             if not oh.placePiece(board, piece):
@@ -55,38 +68,47 @@ def playWithRandom(net):
     #print board.won + " has won!"
     return board.won
 
-def run(times, howMany, gamesPer):
+def run(times, howMany, gamesPer, net, printout = False):
     """This plays a neural network against a random guesser 'gamesPer' amount of times,
     with 'howMany' repetition per trial. There are 'times' trials."""
     total = 0
     wins = []
     variences = []
     averages = []
+    ties = []
     for x in range(0,times):
-        net = Create_Net.start(100,100)
-        total = 0
         varience = 0
         average = 0
         wins = []
+        ties = []
+        total_wins = 0
+        total_ties = 0
         for x in range(0,howMany):
             win = 0
+            tie = 0
             for counter in range(0,gamesPer):
                 outcome = playWithRandom(net)
-                if outcome == "o" or outcome == "tie!":
+                if outcome == "o":
                     win+=1
+                elif outcome == "tie!":
+                    tie+=1
             wins.append(win)
-            total +=win
-        average = float(total)/float(howMany)
+            ties.append(tie)
+        total_wins = sum(wins)
+        total_ties = sum(ties)
+        average = (float(total_wins)/float(howMany),float(total_ties)/float(howMany))
         varience = 0
         for x in wins:
-            varience+=(x-average)**2
+            varience+=(x-average[0])**2
         varience = varience/99
         std_dev = math.sqrt(varience)
-        print "Average: ",average
-        print "Variance: ",varience
-        print "Standard Deviation: ", std_dev
+        if printout:
+            print "Average: ",average
+            print "Variance: ",varience
+            print "Standard Deviation: ", std_dev
         averages.append(average)
         variences.append(varience)
+        return averages
         
-run(1,10,10)    ### This line starts everything; it is the line that runs the program
-    
+#run(1,10,10,True)    ### This line starts everything; it is the line that runs the program
+

@@ -3,7 +3,7 @@ import copy
 import time
 import numpy as np
 import random
-
+import pickle
 def procreate(dup, PERCENTAGE):
     bbest = copy.deepcopy(dup)
     for b in range(0,len(bbest.weights)):
@@ -41,36 +41,35 @@ def start(subjects, generations):
    # SUBJECTS = 1000
    # GENERATIONS = 1000
     nets = [NET.Network([9,30,9]) for x in range(0,subjects)]
-    lists= NET.convertAll(lists)
-    old_maximum = 0
+    lists= NET.convertAll(lists) 
+    old_maximum = -1
     maximum = 0
-    maximum_cost = 100000
+    maximum_wins = -1
     cost = 0
     best = 0
     start_time = time.time()
 
 
     for b in range(0,generations):
+        print b
+        maximum_wins = -1
         for x in nets:
-            y,cost = x.evaluate(lists, answers)
-            if cost < maximum_cost:
-                maximum_cost = cost
-                maximum = y
+            wins = x.evaluate(lists, answers)
+            if wins[0][0] > maximum_wins:
+                maximum_wins = wins[0][0]
                 best = copy.deepcopy(x)
-        if old_maximum != maximum:
-            print maximum, float(maximum)/float(len(lists)), maximum_cost, round((time.time() - start_time),5), b
-            old_maximum = maximum
-        nets = [] 
-        for amount in range (0,99):
+        print maximum_wins, float(maximum_wins)/float(50), round((time.time() - start_time),5), b
+        nets = [best]
+        for amount in range (0,subjects):
             nets.append(procreate(best, PERCENTAGE))
-        if b%1000==0:
-            print maximum, float(maximum)/float(len(lists)), maximum_cost, round((time.time() - start_time),5), b
 
 
-    targetw = open("bestw.txt",'w')
-    targetb = open("bestb.txt",'w')
-    np.save(targetw,best.weights)
-    np.save(targetb,best.biases)
+
+    targetw = open("bestw",'w')
+    targetb = open("bestb",'w')
+   # np.savetxt(targetw,best.weights)
+    pickle.dump(best.biases,targetb)
+    pickle.dump(best.weights,targetw)
     targetw.close()
     targetb.close()
     return best

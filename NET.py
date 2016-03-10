@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+import Game
 class Network:
     def __init__(self,size):
         """Constructor for creating a neural network"""
@@ -18,10 +19,12 @@ class Network:
     
     def evaluate(self, test_data, answers1):
         """Tests the network and returns the results"""
-        answers = [self.feedforward(x) for x in test_data]      ###Array of the output neurons' values
-        maximums = [np.argmax(x) for x in answers]              ###Gets the highest activated neuron's index, which is the network's guess
-        cost = costs(answers1,maximums)                         
-        return sum(int(x == y) for (x, y) in zip(maximums,answers1)), cost
+        #answers = [self.feedforward(x) for x in test_data]      ###Array of the output neurons' values
+        #maximums = [np.argmax(x) for x in answers]              ###Gets the highest activated neuron's index, which is the network's guess
+        #cost = costs(answers1,maximums)                         
+        #return sum(int(x == y) for (x, y) in zip(maximums,answers1)), cost
+        answers = Game.run(1,100,50,self)
+        return answers
     
     def getAnswer(self, boardState):
         """Returns the place the network will place their piece in Tic-Tac-Toe"""
