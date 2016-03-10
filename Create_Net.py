@@ -29,19 +29,11 @@ def procreate(dup, PERCENTAGE):
 def getBest():
     return best
 
-def start(subjects, generations):
-    lists =[
-    ['o','x','o','o','x','x',' ',' ','x'],  ['x','o','o','o','x','x','x',' ',' '],  ['o','x','o',' ',' ','x','x','x','o'],  ['x','x',' ','o',' ','x','o','x','o'],
-    ['o',' ','o','x','x',' ','x','o','x'],  ['x','o','x','o',' ','o','x','x',' '],  ['x',' ',' ','o','o','x','x','o','x'],  ['x',' ','x','x','o','o',' ','x','o'],
-    [' ','x','x',' ','o','o','x','x','o'],  [' ','o','x','o','x',' ','x','o','x'],  [' ',' ',' ',' ',' ',' ',' ',' ',' '],  ['o','x',' ',' ','x',' ',' ',' ',' '],
-    ['x','x',' ',' ','o',' ',' ',' ',' '],  ['x',' ','o',' ','x','x',' ',' ','o']
-    ]
-    answers = [6,8,4,2,1,4,1,6,3,0,4,7,2,3]
+def start(subjects, generations, trials, games, testNet = False, goodNet = 0, xoro = 0):
     PERCENTAGE = .95
    # SUBJECTS = 1000
    # GENERATIONS = 1000
     nets = [NET.Network([9,30,9]) for x in range(0,subjects)]
-    lists= NET.convertAll(lists) 
     old_maximum = -1
     maximum = 0
     maximum_wins = -1
@@ -54,11 +46,14 @@ def start(subjects, generations):
         print b
         maximum_wins = -1
         for x in nets:
-            wins = x.evaluate(lists, answers)
+            if testNet:
+                wins = x.evaluate(trails, games, True, goodNet, xoro)
+            else:
+                wins = x.evaluate(trials, games)
             if wins[0][0] > maximum_wins:
                 maximum_wins = wins[0][0]
                 best = copy.deepcopy(x)
-        print maximum_wins, float(maximum_wins)/float(50), round((time.time() - start_time),5), b
+        print maximum_wins, float(maximum_wins)/float(games), round((time.time() - start_time),5), b
         nets = [best]
         for amount in range (0,subjects):
             nets.append(procreate(best, PERCENTAGE))

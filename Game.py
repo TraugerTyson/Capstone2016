@@ -67,8 +67,30 @@ def playWithRandom(net):
         turn += 1
     #print board.won + " has won!"
     return board.won
-
-def run(times, howMany, gamesPer, net, printout = False):
+def playAgainstOther(testNet, goodNet):
+    """This function pits a neural network (a parameter)
+    against another neural network (2nd parameter) to teach it better"""
+    board = Tic_Tac_Toe.Board()
+    ex = Tic_Tac_Toe.Player("x")
+    oh = Tic_Tac_Toe.Player("o")
+    turn = 0
+    piece = 0
+    while ord(board.won[0]) == 32:
+        if turn%2 == 0:
+            piece = goodNet.getAnswer(board.boardState)
+            if not oh.placePiece(board, piece):
+                print "This place has been taken! Please do again!"
+                turn -=1
+            
+        else:
+            piece = testNet.getAnswer(board.boardState)
+            if not oh.placePiece(board, piece):
+                print "This place has been taken! Please do again!"
+                turn -=1
+        turn += 1
+    #print board.won + " has won!"
+    return board.won
+def run(times, howMany, gamesPer, net, testNet = False, goodNet = 0, xoro = 0, printout = False):
     """This plays a neural network against a random guesser 'gamesPer' amount of times,
     with 'howMany' repetition per trial. There are 'times' trials."""
     total = 0
@@ -86,12 +108,20 @@ def run(times, howMany, gamesPer, net, printout = False):
         for x in range(0,howMany):
             win = 0
             tie = 0
-            for counter in range(0,gamesPer):
-                outcome = playWithRandom(net)
-                if outcome == "o":
+            if testNet:
+                for counter in range(0,gamesPer):
+                    outcome = playWithOther(net,goodNet)
+                if outcome == xoro:
                     win+=1
                 elif outcome == "tie!":
                     tie+=1
+            else:
+                for counter in range(0,gamesPer):
+                    outcome = playWithRandom(net)
+                    if outcome == "o":
+                        win+=1
+                    elif outcome == "tie!":
+                        tie+=1
             wins.append(win)
             ties.append(tie)
         total_wins = sum(wins)

@@ -17,13 +17,16 @@ class Network:
             a = sigmoid(np.dot(self.weights[x],a)+np.hstack(self.biases[x]))
         return a
     
-    def evaluate(self, test_data, answers1):
+    def evaluate(self, trials, games,testNet = False, goodNet = 0, xoro = 0):
         """Tests the network and returns the results"""
         #answers = [self.feedforward(x) for x in test_data]      ###Array of the output neurons' values
         #maximums = [np.argmax(x) for x in answers]              ###Gets the highest activated neuron's index, which is the network's guess
         #cost = costs(answers1,maximums)                         
         #return sum(int(x == y) for (x, y) in zip(maximums,answers1)), cost
-        answers = Game.run(1,100,50,self)
+        if testNet:
+            answers = Game.run(1,trials, games, self, True, goodNet, xoro)
+        else:
+            answers = Game.run(1,trials,games,self)
         return answers
     
     def getAnswer(self, boardState):
