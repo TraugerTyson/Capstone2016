@@ -6,7 +6,9 @@ import Create_Net
 import math
 import numpy as np
 import pickle
+
 def importNet(size):
+    """ Imports a neural network from a file """
     fileWeights = open("bestw","r")
     fileBiases = open("bestb","r")
     net = NET.Network(size)
@@ -18,8 +20,8 @@ def importNet(size):
     fileBiases.close()
     return net
     
-def playWithHuman(net):
-    """This function allows a human player to play
+def playWithHuman(net,xoro):
+    """Allows a human player to play
     against a neural network"""
     board = Tic_Tac_Toe.Board()
     board.displayBoard()
@@ -30,13 +32,21 @@ def playWithHuman(net):
     
     while ord(board.won[0]) == 32:
         if turn%2 == 0:
-            piece = raw_input("Please place your piece! (0-8)\n")
-            piece = ord(piece) - 48
+            if xoro == "x": #If network is x
+                piece = net.getAnswer(board.boardState)
+            else:
+                piece = raw_input("Please place your piece! (0-8)\n")
+                piece = ord(piece) - 48
+            
             if not ex.placePiece(board, piece):
                 print "This place has been taken! Please do again!"
                 turn -=1
         else:
-            piece = net.getAnswer(board.boardState)
+            if xoro == "o": #If network is o
+                piece = net.getAnswer(board.boardState)
+            else:
+                piece = raw_input("Please place your piece! (0-8)\n")
+                piece = ord(piece) - 48
             if not oh.placePiece(board, piece):
                 print "This place has been taken! Please do again!"
                 turn -=1
@@ -45,8 +55,36 @@ def playWithHuman(net):
     print board.won + " has won!"
     return board.won
 
-def playWithRandom(net):
+def playWithRandom(net,xoro):
     """This function pits a neural network (a parameter)
+    against a random guesser and returns the winner"""
+    board = Tic_Tac_Toe.Board()
+    ex = Tic_Tac_Toe.Player("x")
+    oh = Tic_Tac_Toe.Player("o")
+    turn = 0
+    piece = 0
+    while ord(board.won[0]) == 32:
+        if turn%2 == 0:
+            if xoro == "x":
+                piece = net.getAnswer(board.boardState)
+            else:
+                piece = int(random.random()*9)
+            if not ex.placePiece(board,piece):
+                turn-=1
+            
+        else:
+            if xoro == "o":
+                piece = net.getAnswer(board.boardState)
+            else:
+                piece = int(random.random()*9)
+            if not oh.placePiece(board, piece):
+                turn -=1
+        turn += 1
+    #print board.won + " has won!"
+    return board.won
+
+def randomWithRandom():
+    """This function pits a random guesser
     against a random guesser and returns the winner"""
     board = Tic_Tac_Toe.Board()
     ex = Tic_Tac_Toe.Player("x")
@@ -60,14 +98,14 @@ def playWithRandom(net):
                 turn-=1
             
         else:
-            piece = net.getAnswer(board.boardState)
+            piece = int(random.random()*9)
             if not oh.placePiece(board, piece):
-                print "This place has been taken! Please do again!"
                 turn -=1
         turn += 1
     #print board.won + " has won!"
     return board.won
-def playAgainstOther(testNet, goodNet):
+
+def playWithOther(xNet, oNet):
     """This function pits a neural network (a parameter)
     against another neural network (2nd parameter) to teach it better"""
     board = Tic_Tac_Toe.Board()
@@ -77,25 +115,24 @@ def playAgainstOther(testNet, goodNet):
     piece = 0
     while ord(board.won[0]) == 32:
         if turn%2 == 0:
-            piece = goodNet.getAnswer(board.boardState)
-            if not oh.placePiece(board, piece):
-                print "This place has been taken! Please do again!"
+            piece = xNet.getAnswer(board.boardState)
+            if not ex.placePiece(board, piece):
                 turn -=1
             
         else:
-            piece = testNet.getAnswer(board.boardState)
+            piece = oNet.getAnswer(board.boardState)
             if not oh.placePiece(board, piece):
-                print "This place has been taken! Please do again!"
                 turn -=1
         turn += 1
     #print board.won + " has won!"
     return board.won
-def run(times, howMany, gamesPer, net, testNet = False, goodNet = 0, xoro = 0, printout = False):
+
+def run(times, howMany, gamesPer, net, xoro, testNet = False, goodNet = 0, printout = False):
     """This plays a neural network against a random guesser 'gamesPer' amount of times,
     with 'howMany' repetition per trial. There are 'times' trials."""
     total = 0
     wins = []
-    variences = []
+    variences = [] #*variance
     averages = []
     ties = []
     for x in range(0,times):
@@ -108,17 +145,17 @@ def run(times, howMany, gamesPer, net, testNet = False, goodNet = 0, xoro = 0, p
         for x in range(0,howMany):
             win = 0
             tie = 0
-            if testNet:
+            if testNet: #If network to play against
                 for counter in range(0,gamesPer):
                     outcome = playWithOther(net,goodNet)
-                if outcome == xoro:
+                if outcome == "x":
                     win+=1
                 elif outcome == "tie!":
                     tie+=1
             else:
                 for counter in range(0,gamesPer):
-                    outcome = playWithRandom(net)
-                    if outcome == "o":
+                    outcome = playWithRandom(net,xoro)
+                    if outcome == xoro:
                         win+=1
                     elif outcome == "tie!":
                         tie+=1
@@ -130,7 +167,7 @@ def run(times, howMany, gamesPer, net, testNet = False, goodNet = 0, xoro = 0, p
         varience = 0
         for x in wins:
             varience+=(x-average[0])**2
-        varience = varience/99
+        varience = varience/(float(howMany))
         std_dev = math.sqrt(varience)
         if printout:
             print "Average: ",average
@@ -140,5 +177,3 @@ def run(times, howMany, gamesPer, net, testNet = False, goodNet = 0, xoro = 0, p
         variences.append(varience)
         return averages
         
-#run(1,10,10,True)    ### This line starts everything; it is the line that runs the program
-
