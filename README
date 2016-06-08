@@ -1,3 +1,7 @@
 In order to run, Scipy and python 2.7 must be installed on the computer. 
 Python 2.7 can be installed here: https://www.python.org/downloads/
 Scipy can be installed here: https://www.scipy.org/install.html
+
+RUNNING THE PROGRAM:
+At the top of the runner.py file, there are a list of variables that the program needs. Feel free to change these to modify the program.
+Run the program by running the runner.py file. 
